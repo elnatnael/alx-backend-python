@@ -16,7 +16,7 @@ def stream_users_in_batches(batch_size):
             break
         yield rows
         offset += batch_size
-
+    return
 
 def batch_processing(batch_size):
     """
