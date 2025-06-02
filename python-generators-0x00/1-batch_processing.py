@@ -1,27 +1,26 @@
-from itertools import islice
-import csv
+seed = __import__('seed')
 
 def stream_users_in_batches(batch_size):
     """
-    Generator that yields batches of user dicts from a CSV file.
-    Each batch is a list of dictionaries.
+    Generator that yields user records from the 'user_data' table in batches.
     """
-    file_path = 'user_data.csv'
+    offset = 0
+    while True:
+        connection = seed.connect_to_prodev()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(f"SELECT * FROM user_data LIMIT {batch_size} OFFSET {offset}")
+        rows = cursor.fetchall()
+        connection.close()
 
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            while True:
-                batch = list(islice(reader, batch_size))
-                if not batch:
-                    break
-                yield batch
-    except FileNotFoundError:
-        print(f"File '{file_path}' not found.")
+        if not rows:
+            break
+        yield rows
+        offset += batch_size
+
 
 def batch_processing(batch_size):
     """
-    Generator that yields users (as dicts) with age > 25.
+    Generator that yields users (as dicts) with age > 25 from the DB.
     """
     for batch in stream_users_in_batches(batch_size):
         for user in batch:
@@ -29,4 +28,4 @@ def batch_processing(batch_size):
                 if int(user['age']) > 25:
                     yield user
             except (ValueError, KeyError):
-                continue  # Skip malformed rows
+                continue
