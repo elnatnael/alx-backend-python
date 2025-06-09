@@ -25,6 +25,7 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, {"fake": "data"})
 
     def test_public_repos_url(self):
+        """Test _public_repos_url returns URL from org property"""
         test_payload = {
             "repos_url": (
                 "https://api.github.com/orgs/testorg/repos"
