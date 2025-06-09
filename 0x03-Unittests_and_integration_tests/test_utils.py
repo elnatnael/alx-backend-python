@@ -67,7 +67,7 @@ class TestGetJson(unittest.TestCase):
                 result,
                 test_payload
             )
-
+            
 
 class TestMemoize(unittest.TestCase):
     """Test memoization functionality"""
