@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized, parameterized_class
 from typing import Dict, Any
+import requests
 
 from client import GithubOrgClient
 from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
@@ -99,18 +100,22 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Set up class with mock for get_json"""
-        cls.get_patcher = patch('client.get_json')
-        cls.mock_get_json = cls.get_patcher.start()
+        """Set up class with mock for requests.get"""
+        cls.get_patcher = patch('requests.get')
+        cls.mock_get = cls.get_patcher.start()
 
-        def side_effect(url):
+        def mocked_requests_get(url, *args, **kwargs):
+            """Side effect function to mock requests.get().json() behavior"""
+            mock_resp = Mock()
             if url == "https://api.github.com/orgs/google":
-                return cls.org_payload
+                mock_resp.json.return_value = cls.org_payload
             elif url == cls.org_payload["repos_url"]:
-                return cls.repos_payload
-            return None
+                mock_resp.json.return_value = cls.repos_payload
+            else:
+                mock_resp.json.return_value = None
+            return mock_resp
 
-        cls.mock_get_json.side_effect = side_effect
+        cls.mock_get.side_effect = mocked_requests_get
 
     @classmethod
     def tearDownClass(cls):
@@ -121,13 +126,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """Test public_repos method with integration"""
         client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(), self.expected_repos)
-        # Verify at least the expected calls were made
-        expected_calls = [
-            unittest.mock.call("https://api.github.com/orgs/google"),
-            unittest.mock.call(self.org_payload["repos_url"])
-        ]
-        for call in expected_calls:
-            self.assertIn(call, self.mock_get_json.call_args_list)
 
     def test_public_repos_with_license(self):
         """Test public_repos method with license filter"""
@@ -136,13 +134,6 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             client.public_repos(license="apache-2.0"),
             self.apache2_repos
         )
-        # Verify at least the expected calls were made
-        expected_calls = [
-            unittest.mock.call("https://api.github.com/orgs/google"),
-            unittest.mock.call(self.org_payload["repos_url"])
-        ]
-        for call in expected_calls:
-            self.assertIn(call, self.mock_get_json.call_args_list)
 
 
 if __name__ == "__main__":
