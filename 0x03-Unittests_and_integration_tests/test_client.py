@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Unit and Integration tests for client.GithubOrgClient"""
 
-import sys
 import unittest
 from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized, parameterized_class
@@ -9,7 +8,6 @@ from typing import Dict, Any
 
 from client import GithubOrgClient
 from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
-
 
 
 class TestGithubOrgClient(unittest.TestCase):
