@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Fixtures for GithubOrgClient unit and integration tests.
+Contains payloads and expected results for test cases.
+"""
+
 org_payload = {
     "login": "google",
     "repos_url": "https://api.github.com/orgs/google/repos"
