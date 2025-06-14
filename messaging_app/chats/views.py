@@ -1,63 +1,53 @@
-# Create your views here.
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, filters
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404,render
+from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 
-
-class ConversationViewSet(viewsets.ViewSet):
+class ConversationViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all()
+    serializer_class = ConversationSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__email']
 
-    def list(self, request):
-        conversations = Conversation.objects.filter(participants=request.user).order_by('-created_at')
-        serializer = ConversationSerializer(conversations, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Conversation.objects.filter(participants=self.request.user).order_by('-created_at')
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         participant_ids = request.data.get('participant_ids', [])
-
         if not participant_ids:
-            return Response(
-                {"error": "You must provide participant_ids."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "You must provide participant_ids."}, status=status.HTTP_400_BAD_REQUEST)
 
         participants = User.objects.filter(user_id__in=participant_ids)
         conversation = Conversation.objects.create()
-        conversation.participants.set(participants | User.objects.filter(user_id=request.user.user_id))  # Add self
+        conversation.participants.set(participants | User.objects.filter(user_id=request.user.user_id))
         conversation.save()
 
-        serializer = ConversationSerializer(conversation)
+        serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class MessageViewSet(viewsets.ViewSet):
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['message_body', 'sender__email']
 
-    def list(self, request, conversation_pk=None):
-        conversation = get_object_or_404(Conversation, conversation_id=conversation_pk)
+    def get_queryset(self):
+        conversation_id = self.kwargs.get('conversation_pk')  # From nested router
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
-        if request.user not in conversation.participants.all():
-            return Response({"detail": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+        if self.request.user not in conversation.participants.all():
+            return Message.objects.none()
 
-        messages = conversation.messages.all().order_by('sent_at')
-        serializer = MessageSerializer(messages, many=True)
-        return Response(serializer.data)
+        return Message.objects.filter(conversation=conversation).order_by('sent_at')
 
-    def create(self, request, conversation_pk=None):
-        conversation = get_object_or_404(Conversation, conversation_id=conversation_pk)
+    def perform_create(self, serializer):
+        conversation_id = self.kwargs.get('conversation_pk')
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
-        if request.user not in conversation.participants.all():
-            return Response({"detail": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+        if self.request.user not in conversation.participants.all():
+            raise PermissionError("You cannot send messages to this conversation.")
 
-        serializer = MessageSerializer(data=request.data)
-        if serializer.is_valid():
-            Message.objects.create(
-                sender=request.user,
-                conversation=conversation,
-                message_body=serializer.validated_data['message_body']
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(sender=self.request.user, conversation=conversation)
