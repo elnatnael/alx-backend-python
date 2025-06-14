@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework_nested.routers import SimpleRouter, NestedSimpleRouter
 from .views import ConversationViewSet, MessageViewSet
+from rest_framework import filters
+
 
 router = SimpleRouter()
 router.register(r'conversations', ConversationViewSet, basename='conversations')
