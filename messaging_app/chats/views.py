@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
+from rest_framework.permissions import AllowAny
+from .permissions import IsParticipantOfConversation
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -12,7 +14,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
     search_fields = ['participants__email']
 
     def get_queryset(self):
-        return Conversation.objects.filter(participants=self.request.user).order_by('-created_at')
+        user = self.request.user
+        if not user.is_authenticated:
+            return Conversation.objects.none()
+        return Conversation.objects.filter(participants=user).order_by('-created_at')
+
+
+  ##  def get_queryset(self):
+    ##    return Conversation.objects.filter(participants=self.request.user).order_by('-created_at')
 
     def create(self, request, *args, **kwargs):
         participant_ids = request.data.get('participant_ids', [])
@@ -31,7 +40,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter, IsParticipantOfConversation]
     search_fields = ['message_body', 'sender__email']
 
     def get_queryset(self):

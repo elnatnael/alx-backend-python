@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'chats.User'
+AUTH_USER_MODEL = 'chats.User'  # Add this to settings.py
 
 
 # Application definition
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'chats'
+     'chats.apps.ChatsConfig'
 
 ]
 

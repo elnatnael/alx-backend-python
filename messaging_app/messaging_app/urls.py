@@ -16,8 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponseRedirect
+
+
+def root_redirect(request):
+    return HttpResponseRedirect('/api/')
+
 
 urlpatterns = [
+     path('', root_redirect),  # redirect root to /api/
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),  # <- This is what the checker needs
     path('api-auth/', include('rest_framework.urls')),
