@@ -5,7 +5,8 @@ from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework.permissions import AllowAny
 from .permissions import IsParticipantOfConversation
-from rest_framework.exceptions import PermissionDenied
+from .filters import MessageFilter
+from .pagination import MessagePagination  # O
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -43,6 +44,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter, IsParticipantOfConversation]
     search_fields = ['message_body', 'sender__email']
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination  # Optional: override global settings
 
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_pk')  # From nested router
