@@ -49,7 +49,8 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied("You are not allowed to view messages from this conversation.")
+            return Response({"detail": "You are not allowed to view messages from this conversation."},
+                             status=status.HTTP_403_FORBIDDEN)
 
         return Message.objects.filter(conversation=conversation).order_by('sent_at')
 
@@ -58,6 +59,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied("You cannot send messages to this conversation.")
+            return Response( {"detail": "You are not allowed to view messages from this conversation."},
+                            status=status.HTTP_403_FORBIDDEN)
 
         serializer.save(sender=self.request.user, conversation=conversation)
