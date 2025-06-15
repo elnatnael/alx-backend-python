@@ -5,6 +5,7 @@ from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework.permissions import AllowAny
 from .permissions import IsParticipantOfConversation
+from rest_framework.exceptions import PermissionDenied
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -48,7 +49,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            return Message.objects.none()
+            raise PermissionDenied("You are not allowed to view messages from this conversation.")
 
         return Message.objects.filter(conversation=conversation).order_by('sent_at')
 
@@ -57,6 +58,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionError("You cannot send messages to this conversation.")
+            raise PermissionDenied("You cannot send messages to this conversation.")
 
         serializer.save(sender=self.request.user, conversation=conversation)

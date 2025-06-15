@@ -12,8 +12,12 @@ class IsParticipantOfConversation(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Object-level check: obj is a Message instance.
-        Allow only if the user is a participant in the conversation.
+        Object-level permission check:
+        - obj is a Message instance
+        - Check if the request.user is part of the conversation
         """
-        conversation = obj.conversation  # Assuming message has FK to conversation
-        return request.user in conversation.participants.all()
+
+        if request.method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
+            return request.user in obj.conversation.participants.all()
+
+        return False  # Deny all other methods just in case
