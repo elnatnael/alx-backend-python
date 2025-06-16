@@ -41,8 +41,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [filters.SearchFilter, IsParticipantOfConversation]
+    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
+    filter_backends = [filters.SearchFilter]
     search_fields = ['message_body', 'sender__email']
     filterset_class = MessageFilter
     pagination_class = MessagePagination  # Optional: override global settings
