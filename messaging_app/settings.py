@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'chats.apps.ChatsConfig',
     'rest_framework_simplejwt',
+    'django_filters',
 
 ]
 
