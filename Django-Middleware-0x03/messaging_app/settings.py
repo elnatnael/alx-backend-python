@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     
     'chats.middleware.RequestLoggingMiddleware',  # ✅ <-- This must be here
+    'chats.middleware.RestrictAccessByTimeMiddleware',   
     
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
