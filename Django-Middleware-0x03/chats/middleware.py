@@ -8,8 +8,8 @@ class RequestLoggingMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        user = request.user if hasattr(request, 'user') and request.user.is_authenticated else 'Anonymous'
-        log_message = f"{datetime.now()} - User: {user} - Path: {request.method} {request.path}\n"
+        username = request.user.get_username() if hasattr(request, 'user') and request.user.is_authenticated else 'Anonymous'
+        log_message = f"{datetime.now()} - User: {username} - Path: {request.method} {request.path}\n"
 
         # This resolves to your project root
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,14 +27,17 @@ class RequestLoggingMiddleware:
         return self.get_response(request)
     
 
-
+    
 class RestrictAccessByTimeMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        now = datetime.now().time()
-        # Allowed time is between 6PM (18:00) and 9PM (21:00)
-        if now < datetime.strptime("18:00", "%H:%M").time() or now > datetime.strptime("21:00", "%H:%M").time():
-            return HttpResponseForbidden("Access denied: Outside allowed hours (6PM–9PM).")
+        current_hour = datetime.now().hour
+        if current_hour < 18 or current_hour > 21:
+            return HttpResponseForbidden("Access denied: Chat allowed only between 6 PM and 9 PM.")
         return self.get_response(request)
+
+
+    
+
