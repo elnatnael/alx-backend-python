@@ -58,10 +58,14 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'chats.middleware.RequestLoggingMiddleware',  # 👈 ADD THIS LINE
+    
+    'chats.middleware.RequestLoggingMiddleware',         # <-- This should exist
+    'chats.middleware.RestrictAccessByTimeMiddleware',   # <-- This should be added
+
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 CORS_ALLOW_ALL_ORIGINS = True  # Or limit for security
 REST_FRAMEWORK = {
