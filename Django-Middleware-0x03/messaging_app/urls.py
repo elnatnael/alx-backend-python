@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/5.2/topics/http/urls/
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponseRedirect
+from messaging_app.views import log_test_view
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
