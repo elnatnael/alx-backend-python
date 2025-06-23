@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # MUST be before your custom middleware
 
     'chats.middleware.RequestLoggingMiddleware',
-    'chats.middleware.RolePermissionMiddleware',
+    'chats.middleware.RolepermissionMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',
 
     'django.contrib.messages.middleware.MessageMiddleware',
