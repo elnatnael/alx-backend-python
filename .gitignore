@@ -1,0 +1,4 @@
+messaging_app/venv/
+.env
+env/
+.DS_Store
