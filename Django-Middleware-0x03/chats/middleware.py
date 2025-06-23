@@ -19,6 +19,7 @@ class RequestLoggingMiddleware:
         try:
             with open(log_path, 'a') as f:
                 f.write(log_message)
+            print("✅ Log written successfully")
         except Exception as e:
             print(f"❌ Error writing log: {e}")
 
@@ -78,4 +79,34 @@ class OffensiveLanguageMiddleware:
         return ip
 
 
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        print(f"🔍 Incoming {request.method} to {request.path}")
+
+        """ if request.path.startswith('/admin/') or request.path.startswith('/api-auth/'):
+           return self.get_response(request)
+         """
+        # ✅ Allow safe methods
+        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+            print("✅ Allowed: Safe method")
+            return self.get_response(request)
+
+        # ✅ Check if user is authenticated
+        if not hasattr(request, 'user') or not request.user.is_authenticated:
+            print("❌ Blocked: Not authenticated")
+            return HttpResponseForbidden("403 Forbidden: Authentication required.")
+
+        # ✅ Check if user has admin or host role
+        role = getattr(request.user, 'role', None)
+        print(f"👤 Role: {role}")
+        if role not in ['admin', 'host']:
+            print("❌ Blocked: Role not allowed")
+            return HttpResponseForbidden("403 Forbidden: You do not have permission.")
+
+        print("✅ Allowed: Authorized user")
+        return self.get_response(request)
 

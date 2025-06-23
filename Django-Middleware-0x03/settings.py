@@ -56,14 +56,17 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # MUST be before your custom middleware
 
     'chats.middleware.RequestLoggingMiddleware',
-    'chats.middleware.RestrictAccessByTimeMiddleware',  # <- this one
+    'chats.middleware.RolePermissionMiddleware',
+    'chats.middleware.RestrictAccessByTimeMiddleware',
 
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 CORS_ALLOW_ALL_ORIGINS = True  # Or limit for security
 REST_FRAMEWORK = {
