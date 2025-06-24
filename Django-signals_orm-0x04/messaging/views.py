@@ -16,6 +16,10 @@ def unread_messages_view(request):
     unread_messages = Message.unread.for_user(request.user)
     return render(request, 'messaging/unread.html', {'unread_messages': unread_messages})
 
+def inbox_view(request):
+    unread_messages = Message.unread.unread_for_user(request.user)  # ✅ correct method
+    return render(request, 'messaging/inbox.html', {'messages': unread_messages})
+
 # Fetch top-level messages and their replies efficiently
 messages = Message.objects.filter(parent_message=None)\
     .select_related('sender', 'receiver')\
