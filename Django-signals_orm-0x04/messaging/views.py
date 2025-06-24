@@ -12,6 +12,10 @@ def delete_user(request):
     user.delete()
     return redirect('home')  # 👈 redirect somewhere appropriate
 
+def unread_messages_view(request):
+    unread_messages = Message.unread.for_user(request.user)
+    return render(request, 'messaging/unread.html', {'unread_messages': unread_messages})
+
 # Fetch top-level messages and their replies efficiently
 messages = Message.objects.filter(parent_message=None)\
     .select_related('sender', 'receiver')\
