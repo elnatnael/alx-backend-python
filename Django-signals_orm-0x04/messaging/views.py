@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from .models import Message
 from django.db.models import Prefetch
 from django.shortcuts import render
+from django.views.decorators.cache import cache_page
+
 
 
 @login_required
@@ -35,3 +37,8 @@ def user_messages_view(request):
         .prefetch_related('replies')
 
     return render(request, 'messaging/user_messages.html', {'messages': messages})
+
+@cache_page(60)  # ⏱️ Cache for 60 seconds
+def message_list_view(request):
+    messages = Message.objects.all()
+    return render(request, 'messaging/message_list.html', {'messages': messages})
