@@ -9,6 +9,15 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)  # ✅ required field
 
+    # 👇 Self-referencing foreign key for threading
+    parent_message = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='replies'
+    )
+
     def __str__(self):
         return f"{self.sender.username} to {self.receiver.username}: {self.content[:30]}"
     
