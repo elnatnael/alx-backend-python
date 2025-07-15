@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Check for Minikube
+if ! command -v minikube &>/dev/null; then
+  echo "❌ Minikube is not installed. Please install it first: https://minikube.sigs.k8s.io/docs/start/"
+  exit 1
+fi
+
+# Check for kubectl
+if ! command -v kubectl &>/dev/null; then
+  echo "❌ kubectl is not installed. Please install it first: https://kubernetes.io/docs/tasks/tools/"
+  exit 1
+fi
+
+# Start Minikube
+echo "🚀 Starting Minikube..."
+minikube start --driver=hyperkit
+
+# Fallback to docker if hyperkit fails (macOS specific logic)
+if [ $? -ne 0 ]; then
+  echo "⚠️ Failed with Hyperkit. Trying Docker instead..."
+  minikube start --driver=docker
+fi
+
+# Verify Minikube is running
+if [ $? -ne 0 ]; then
+  echo "❌ Minikube failed to start with both drivers."
+  exit 1
+fi
+
+# Check cluster info
+echo "🔍 Verifying Kubernetes cluster status..."
+kubectl cluster-info
+
+if [ $? -ne 0 ]; then
+  echo "❌ Failed to get cluster info. Is the cluster running?"
+  exit 1
+fi
+
+# List all pods
+echo "📦 Listing all pods in all namespaces..."
+kubectl get pods --all-namespaces
+
+exit 0
