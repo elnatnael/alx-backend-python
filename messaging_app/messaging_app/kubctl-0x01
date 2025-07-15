@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo "📦 Scaling deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+echo "📍 Waiting 10 seconds for pods to scale..."
+sleep 10
+
+echo "🔍 Verifying pod status..."
+kubectl get pods
+
+echo "🌐 Getting service URL..."
+URL=$(minikube service messaging-service --url)
+
+echo "🚀 Running load test with wrk on $URL"
+wrk -t2 -c100 -d10s "$URL"
+
+echo "📊 Monitoring resource usage..."
+kubectl top pods
