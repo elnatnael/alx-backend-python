@@ -1,0 +1,45 @@
+pipeline {
+    agent {
+        docker {
+            image 'python:3.10'
+        }
+    }
+
+    environment {
+        VENV_DIR = 'venv'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'github-creds', url: 'https://github.com/elnatnael/alx-backend-python', branch: 'main'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'python -m venv $VENV_DIR'
+                sh './venv/bin/pip install --upgrade pip'
+                sh './venv/bin/pip install -r messaging_app/requirements.txt'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh './venv/bin/pytest messaging_app/tests --junitxml=report.xml'
+            }
+        }
+
+        stage('Archive Test Report') {
+            steps {
+                junit 'report.xml'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+        }
+    }
+}
