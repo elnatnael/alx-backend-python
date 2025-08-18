@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 import os
 import time
 
@@ -14,18 +14,13 @@ class RequestLoggingMiddleware:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         log_path = os.path.join(base_dir, 'requests.log')
 
-        print("📄 Attempting to log to:", log_path)
-
         try:
             with open(log_path, 'a') as f:
                 f.write(log_message)
-            print("✅ Log written successfully")
         except Exception as e:
-            print(f"❌ Error writing log: {e}")
+            print(f"Error writing log: {e}")
 
         return self.get_response(request)
-
-
 
 class RestrictAccessByTimeMiddleware:
     def __init__(self, get_response):
@@ -36,10 +31,7 @@ class RestrictAccessByTimeMiddleware:
         if current_hour < 18 or current_hour > 21:
             return HttpResponseForbidden("Access denied: Chat allowed only between 6 PM and 9 PM.")
         return self.get_response(request)
-    
 
-
-# chats/middleware.py
 class OffensiveLanguageMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -79,33 +71,23 @@ class OffensiveLanguageMiddleware:
                 pass
                 
         return self.get_response(request)
+
 class RolepermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        print(f"🔍 Incoming {request.method} to {request.path}")
-
-        """ if request.path.startswith('/admin/') or request.path.startswith('/api-auth/'):
-           return self.get_response(request)
-         """
-        # ✅ Allow safe methods
-        if request.method in ['GET', 'HEAD', 'OPTIONS']:
-            print("✅ Allowed: Safe method")
+        if request.path.startswith('/admin/') or request.path.startswith('/api-auth/'):
             return self.get_response(request)
 
-        # ✅ Check if user is authenticated
+        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return self.get_response(request)
+
         if not hasattr(request, 'user') or not request.user.is_authenticated:
-            print("❌ Blocked: Not authenticated")
             return HttpResponseForbidden("403 Forbidden: Authentication required.")
 
-        # ✅ Check if user has admin or host role
         role = getattr(request.user, 'role', None)
-        print(f"👤 Role: {role}")
         if role not in ['admin', 'host']:
-            print("❌ Blocked: Role not allowed")
             return HttpResponseForbidden("403 Forbidden: You do not have permission.")
 
-        print("✅ Allowed: Authorized user")
         return self.get_response(request)
-
