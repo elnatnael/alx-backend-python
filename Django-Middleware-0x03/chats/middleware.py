@@ -39,47 +39,46 @@ class RestrictAccessByTimeMiddleware:
     
 
 
+# chats/middleware.py
 class OffensiveLanguageMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # Dictionary to track IPs: { ip_address: [(timestamp1), (timestamp2), ...] }
-        self.ip_message_times = {}
+        # Define your list of offensive words
+        self.offensive_words = {
+            'badword1', 'badword2', 'badword3'  # Add your actual offensive words here
+        }
 
     def __call__(self, request):
-        # Only count POST requests (assuming messages are sent via POST)
-        if request.method == 'POST':
-            ip = self.get_client_ip(request)
-            now = time.time()
-
-            # Initialize the list if IP not tracked yet
-            if ip not in self.ip_message_times:
-                self.ip_message_times[ip] = []
-
-            # Remove timestamps older than 60 seconds (1 minute window)
-            one_minute_ago = now - 60
-            self.ip_message_times[ip] = [t for t in self.ip_message_times[ip] if t > one_minute_ago]
-
-            # Check if IP exceeded 5 messages in the last minute
-            if len(self.ip_message_times[ip]) >= 5:
-                return HttpResponseForbidden("Message limit exceeded: max 5 messages per minute.")
-
-            # Record this message timestamp
-            self.ip_message_times[ip].append(now)
-
-        # Continue processing the request
+        # Skip check for GET requests
+        if request.method != 'POST':
+            return self.get_response(request)
+            
+        # Check POST data
+        for field, value in request.POST.items():
+            if isinstance(value, str):
+                lower_value = value.lower()
+                if any(bad_word in lower_value for bad_word in self.offensive_words):
+                    return JsonResponse(
+                        {'error': 'Your message contains inappropriate language'},
+                        status=400
+                    )
+        
+        # Check JSON data if applicable
+        if request.content_type == 'application/json':
+            try:
+                data = request.data
+                for field, value in data.items():
+                    if isinstance(value, str):
+                        lower_value = value.lower()
+                        if any(bad_word in lower_value for bad_word in self.offensive_words):
+                            return JsonResponse(
+                                {'error': 'Your message contains inappropriate language'},
+                                status=400
+                            )
+            except:
+                pass
+                
         return self.get_response(request)
-
-    def get_client_ip(self, request):
-        # Standard way to get IP from request headers
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
-
-
-
 class RolepermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
