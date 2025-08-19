@@ -70,8 +70,8 @@ class TestGithubOrgClient(unittest.TestCase):
         ({}, "bsd-3-clause", False),
         ({"license": None}, "bsd-3-clause", False),
     ])
-    def test_has_license(self, repo: Dict[str, Dict], 
-                        license_key: str, expected: bool) -> None:
+    def test_has_license(self, repo: Dict[str, Dict],
+                         license_key: str, expected: bool) -> None:
         """Test has_license method"""
         client = GithubOrgClient("testorg")
         self.assertEqual(
@@ -80,10 +80,10 @@ class TestGithubOrgClient(unittest.TestCase):
         )
 
 
-@parameterized_class(("org_payload", "repos_payload", 
-                     "expected_repos", "apache2_repos"), [
-    (org_payload, repos_payload, expected_repos, apache2_repos)
-])
+@parameterized_class(
+    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
+    [(org_payload, repos_payload, expected_repos, apache2_repos)]
+)
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient.public_repos"""
 
