@@ -4,7 +4,7 @@
 import unittest
 from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized, parameterized_class
-from typing import Dict, Any
+from typing import Dict
 
 from client import GithubOrgClient
 from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
@@ -70,8 +70,9 @@ class TestGithubOrgClient(unittest.TestCase):
         ({}, "bsd-3-clause", False),
         ({"license": None}, "bsd-3-clause", False),
     ])
-    def test_has_license(self, repo: Dict[str, Any], license_key: str, expected: bool) -> None:
-        """Test has_license method with parameterized input"""
+    def test_has_license(self, repo: Dict[str, Dict], 
+                        license_key: str, expected: bool) -> None:
+        """Test has_license method"""
         client = GithubOrgClient("testorg")
         self.assertEqual(
             client.has_license(repo, license_key),
@@ -79,16 +80,10 @@ class TestGithubOrgClient(unittest.TestCase):
         )
 
 
-@parameterized_class(
-    [
-        {
-            "org_payload": org_payload,
-            "repos_payload": repos_payload,
-            "expected_repos": expected_repos,
-            "apache2_repos": apache2_repos
-        }
-    ]
-)
+@parameterized_class(("org_payload", "repos_payload", 
+                     "expected_repos", "apache2_repos"), [
+    (org_payload, repos_payload, expected_repos, apache2_repos)
+])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """Integration tests for GithubOrgClient.public_repos"""
 
@@ -125,7 +120,3 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             client.public_repos(license="apache-2.0"),
             self.apache2_repos
         )
-
-
-if __name__ == "__main__":
-    unittest.main()
