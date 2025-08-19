@@ -1,6 +1,6 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework import permissions
 
-class IsParticipantOfConversation(BasePermission):
+class IsParticipantOfConversation(permissions.BasePermission):
     """
     Allow only authenticated users who are participants in the conversation
     to view, create, update, or delete messages.
@@ -16,8 +16,6 @@ class IsParticipantOfConversation(BasePermission):
         - obj is a Message instance
         - Check if the request.user is part of the conversation
         """
-
         if request.method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
             return request.user in obj.conversation.participants.all()
-
         return False  # Deny all other methods just in case
