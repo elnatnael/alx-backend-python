@@ -55,13 +55,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # MUST be before your custom middleware
-
     'chats.middleware.RequestLoggingMiddleware',
     'chats.middleware.RolepermissionMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',
-
+    'chats.middleware.OffensiveLanguageMiddleware',  # Add this line
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
